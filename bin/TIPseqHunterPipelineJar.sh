@@ -13,7 +13,7 @@
 #========== software required ==========
 tipseqjar="/java/TIPseqHunter.jar"
 trimmomaticpath="/java/Trimmomatic-0.32"
-bowtie2path="/bowtie2-2.2.3" 
+bowtie2path="/bowtie2-2.2.3"
 picardpath="/java/picard-tools-1.79"
 samjarpath="/java/picard-tools-1.112/sam-1.112.jar"
 mathjarpath="/java/commons-math3-3.4.1/commons-math3-3.4.1.jar"
@@ -53,7 +53,7 @@ echo "total-number-of-reads-in-one-fastq="$readnum
 Xvalue=1000 # please reference to bowtie software
 nslots=8 # number of cpus for alignment
 # for P4
-wsize=100 # (base pair for peak identification) two neighbour peaks will be merged together if the distance between two peaks is less than window size 
+wsize=100 # (base pair for peak identification) two neighbour peaks will be merged together if the distance between two peaks is less than window size
 regwsize=1 # minimum width of peak (base pair)
 minreads=1 # minimum number of reads within peak (count)
 # for P5

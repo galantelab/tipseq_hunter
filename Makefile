@@ -47,15 +47,14 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 
 run-pipeline: check-args ## Run TIPseqHunterPipelineJar.sh
 	docker run --rm -u $(shell id -u):$(shell id -g) --env-file=$(cnf) --name=$(APP_NAME) \
+		-v /etc/passwd:/etc/passwd:ro \
 		-v $(hg19_refindex):$(hg19_refindex):ro \
 		-v $(hg19_fai):$(hg19_fai):ro \
 		-v $(l1hs_refindex):$(l1hs_refindex):ro \
 		-v $(l1hs_fai):$(l1hs_fai):ro \
 		-v $(adapterfa):$(adapterfa):ro \
 		-v $(positive_anno_path):$(positive_anno_path):ro \
-		-v $(positive_anno_file):$(positive_anno_file):ro \
 		-v $(pathezm):$(pathezm):ro \
-		-v $(ezm):$(ezm):ro \
 		-v $(l1hsseq):$(l1hsseq):ro \
 		-v $(word 1,$(args)):$(word 1,$(args)) \
 		-v $(word 2,$(args)):$(word 2,$(args)) \
@@ -135,4 +134,4 @@ repo-login: ## Login to dockerhub registry
 
 version: ## Output the current version
 	@echo $(VERSION)
-	
+
