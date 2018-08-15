@@ -26,41 +26,97 @@ help: ## This help.
 
 
 # DOCKER TASKS
+
 # Build the container
+.PHONY: build
+
 build: ## Build the container
 	docker build -t $(APP_NAME) .
+
+.PHONY: build-nc
 
 build-nc: ## Build the container without caching
 	docker build --no-cache -t $(APP_NAME) .
 
-run: ## Run container on port configured in `config.env`
-	docker run -i -t --rm --env-file=./config.env -p=$(PORT):$(PORT) --name="$(APP_NAME)" $(APP_NAME)
+# Run the container
+.PHONY: run
+
+run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
+
+.PHONY: run-pipeline
+
+run-pipeline: check-args ## Run TIPseqHunterPipelineJar.sh
+	docker run --rm -u $(shell id -u):$(shell id -g) --env-file=$(cnf) --name=$(APP_NAME) \
+		-v $(hg19_refindex):$(hg19_refindex):ro \
+		-v $(hg19_fai):$(hg19_fai):ro \
+		-v $(l1hs_refindex):$(l1hs_refindex):ro \
+		-v $(l1hs_fai):$(l1hs_fai):ro \
+		-v $(adapterfa):$(adapterfa):ro \
+		-v $(positive_anno_path):$(positive_anno_path):ro \
+		-v $(positive_anno_file):$(positive_anno_file):ro \
+		-v $(pathezm):$(pathezm):ro \
+		-v $(ezm):$(ezm):ro \
+		-v $(l1hsseq):$(l1hsseq):ro \
+		-v $(word 1,$(args)):$(word 1,$(args)) \
+		-v $(word 2,$(args)):$(word 2,$(args)) \
+		-w $(word 2,$(args)) \
+		$(APP_NAME) TIPseqHunterPipelineJar.sh $(args)
 
 
-up: build run ## Run container on port configured in `config.env` (Alias to run)
+.PHONY: run-pipeline-somatic
+
+run-pipeline-somatic: check-args ## Run TIPseqHunterPipelineJarSomatic.sh
+	docker run --rm --env-file=$(cnf) --name=$(APP_NAME) $(APP_NAME)
+
+.PHONY: up
+
+up: build run ## Run TIPseqHunter pipeline completely (Alias to run)
+
+.PHONY: check-args
+
+check-args: ## Check if variable `args` is defined
+ifndef args
+	$(error 'args' is not defined)
+endif
+
+.PHONY: stop
 
 stop: ## Stop and remove a running container
 	docker stop $(APP_NAME); docker rm $(APP_NAME)
 
-release: build-nc publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to ECR
+.PHONY: release
+
+release: build publish ## Make a release by building and publishing the `{version}` ans `latest` tagged containers to dockerhub
 
 # Docker publish
-publish: repo-login publish-latest publish-version ## Publish the `{version}` ans `latest` tagged containers to ECR
+.PHONY: publish
 
-publish-latest: tag-latest ## Publish the `latest` taged container to ECR
+publish: repo-login publish-latest publish-version ## Publish the `{version}` ans `latest` tagged containers to dockerhub
+
+.PHONY: publish-latest
+
+publish-latest: tag-latest ## Publish the `latest` taged container to dockerhub
 	@echo 'publish latest to $(DOCKER_REPO)'
 	docker push $(DOCKER_REPO)/$(APP_NAME):latest
 
-publish-version: tag-version ## Publish the `{version}` taged container to ECR
+.PHONY: publish-version
+
+publish-version: tag-version ## Publish the `{version}` taged container to dockerhub
 	@echo 'publish $(VERSION) to $(DOCKER_REPO)'
 	docker push $(DOCKER_REPO)/$(APP_NAME):$(VERSION)
 
 # Docker tagging
+.PHONY: tag
+
 tag: tag-latest tag-version ## Generate container tags for the `{version}` ans `latest` tags
+
+.PHONY: tag-latest
 
 tag-latest: ## Generate container `{version}` tag
 	@echo 'create tag latest'
 	docker tag $(APP_NAME) $(DOCKER_REPO)/$(APP_NAME):latest
+
+.PHONY: tag-version
 
 tag-version: ## Generate container `latest` tag
 	@echo 'create tag $(VERSION)'
@@ -68,19 +124,14 @@ tag-version: ## Generate container `latest` tag
 
 # HELPERS
 
-# generate script to login to aws docker repo
-CMD_REPOLOGIN := "eval $$\( aws ecr"
-ifdef AWS_CLI_PROFILE
-CMD_REPOLOGIN += " --profile $(AWS_CLI_PROFILE)"
-endif
-ifdef AWS_CLI_REGION
-CMD_REPOLOGIN += " --region $(AWS_CLI_REGION)"
-endif
-CMD_REPOLOGIN += " get-login --no-include-email \)"
+# login to dockerhub
+.PHONY: repo-login
 
-# login to AWS-ECR
-repo-login: ## Auto login to AWS-ECR unsing aws-cli
-	@eval $(CMD_REPOLOGIN)
+repo-login: ## Login to dockerhub registry
+	@echo 'login to dockerhub registry'
+	docker login -u $(USER_NAME)
+
+.PHONY: version
 
 version: ## Output the current version
 	@echo $(VERSION)
