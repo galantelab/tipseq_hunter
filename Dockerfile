@@ -1,13 +1,13 @@
-FROM ubuntu:latest
+FROM ubuntu:16.04
 
 # Set metadata
 LABEL maintainer="tmiller@mochsl.org.br"
 
 # Set environment variables
-ENV SAMTOOLS_URL=https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2 \
-    SAMTOOLS_PATH=/samtools-1.7 \
-    BOWTIE2_URL=https://github.com/BenLangmead/bowtie2/archive/v2.2.3.tar.gz \
-    BOWTIE2_PATH=/bowtie2-2.2.3
+ENV SAMTOOLS_URL="https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2" \
+    SAMTOOLS_PATH="/samtools-1.7" \
+    BOWTIE2_URL="https://github.com/BenLangmead/bowtie2/archive/v2.2.3.tar.gz" \
+    BOWTIE2_PATH="/bowtie2-2.2.3"
 
 # Set PATH to find samtools
 ENV PATH=${SAMTOOLS_PATH}:${PATH}
@@ -29,7 +29,6 @@ RUN apt-get update \
 		liblzma-dev \
 		libncurses5-dev \
 		libtool \
-		python-software-properties \
 		r-base \
 		r-base-core \
 		r-cran-caret \
@@ -47,11 +46,11 @@ RUN apt-get update \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Add TIPseqHunter_data.tar.gz
-ADD *.tar.gz /
+# Copy thirdparty libraries and TIPseqHunter{,2}.jar
+COPY thirdparty lib /java/
 
-# Add all TIPseqHunter executables
-COPY TIPseqHunterPipelineJar*.sh /usr/bin/
+# Copy all TIPseqHunter executables
+COPY bin /usr/bin/
 
 # Set default command
 CMD ["bash"]
