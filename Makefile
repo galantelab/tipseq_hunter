@@ -55,7 +55,7 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 .PHONY: run-pipeline
 
 run-pipeline: check-env ## Run TIPseqHunterPipelineJar.sh
-	@echo 'Run TIPseqHunterPipelineJar.sh $(args)'
+	@echo 'TIPseqHunterPipelineJar.sh $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)'
 	docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
@@ -63,11 +63,10 @@ run-pipeline: check-env ## Run TIPseqHunterPipelineJar.sh
 		--name=$(CONTAINER_NAME) \
 		-v /etc/passwd:/etc/passwd:ro \
 		-v /etc/group:/etc/group:ro \
-		-v $(INPUT_DIR):$(INPUT_DIR) \
-		-v $(OUTPUT_DIR):$(OUTPUT_DIR) \
+		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
+		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJar.sh
-
+		$(APP_NAME) TIPseqHunterPipelineJar.sh >&2
 
 .PHONY: run-pipeline-somatic
 
@@ -78,7 +77,7 @@ run-pipeline-somatic: check-args ## Run TIPseqHunterPipelineJarSomatic.sh
 
 up: build run ## Run TIPseqHunter pipeline completely (Alias to run)
 
-.PHONY: check-args
+.PHONY: check-env
 
 check-env: ## Check if INPUT_DIR/OUTPUT_DIR `args` are defined
 ifndef INPUT_DIR

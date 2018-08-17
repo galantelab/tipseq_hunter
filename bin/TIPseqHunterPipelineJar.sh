@@ -51,7 +51,7 @@ echo "total-number-of-reads-in-one-fastq="$readnum
 
 # for Bowtie2 alignment
 Xvalue=1000 # please reference to bowtie software
-nslots=8 # number of cpus for alignment
+nslots=${THREADS:-8} # number of cpus for alignment
 # for P4
 wsize=100 # (base pair for peak identification) two neighbour peaks will be merged together if the distance between two peaks is less than window size
 regwsize=1 # minimum width of peak (base pair)
