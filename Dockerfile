@@ -3,6 +3,10 @@ FROM ubuntu:16.04
 # Set metadata
 LABEL maintainer="tmiller@mochsl.org.br"
 
+# Define dinamic variable for TIPseqHunter annotation data
+# This must be inside the image context or reachable by URL
+ARG tipseq_hunter_data
+
 # Set environment variables
 ENV SAMTOOLS_URL="https://github.com/samtools/samtools/releases/download/1.7/samtools-1.7.tar.bz2" \
     SAMTOOLS_PATH="/samtools-1.7" \
@@ -45,6 +49,9 @@ RUN apt-get update \
 	&& wget ${BOWTIE2_URL} && tar xzf v2.2.3.tar.gz && (cd ${BOWTIE2_PATH} && make) \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# Add $tipseq_hunter_data to the image
+ADD ${tipseq_hunter_data} /
 
 # Copy thirdparty libraries and TIPseqHunter{,2}.jar
 COPY thirdparty lib /java/

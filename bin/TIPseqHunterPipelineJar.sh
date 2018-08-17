@@ -23,24 +23,24 @@ jtextpath="/java/itextpdf-5.2.1.jar"
 biojavapath="/java//biojava3-core-3.0.1.jar"
 
 #========== database files ==========
-test ${hg19_refindex:?}
-test ${hg19_fai:?}
-test ${l1hs_refindex:?}
-test ${l1hs_fai:?}
-test ${adapterfa:?}
-test ${positive_anno_path:?}
-test ${positive_anno_file:?}
-test ${pathezm:?}
-test ${ezm:?}
-test ${l1hsseq:?}
+hg19_refindex="/download_data/hg19.genome.fa.rm327L1HS.masked"
+hg19_fai="/download_data/hg19.genome.fa.rm327L1HS.masked.fa.fai"
+l1hs_refindex="/download_data/Homo_sapiens_L1.L1HS"
+l1hs_fai="/download_data/Homo_sapiens_L1.L1HS.fa.fai"
+adapterfa="/trimmomatic_adapter/TIPSeqNoL1HSPrimer-Adapter.fa"
+positive_anno_path="/annotation"
+positive_anno_file="ucsc.rm327.rmsk.L1HS.coord.with-strand.txt.Ta.only.bed"
+pathezm="/enzyme_info"
+ezm="vectorette-enzyme-cutting-site-info.txt.wgsrh"
+l1hsseq="/download_data/Homo_sapiens_L1.L1HS.fa"
 
 # input parameters
-fastq_path=$1 # path for the fastq files (Note: this is the only path and file name is not included)
-output_folder=$2 # path for the output files (Note: this is the only path and file name is not included)
-fastq_r1=$3 # read 1 file name of paired fastq files
-key_r1=$4 # key word to recognize read 1 of fastq file (such as "_1" is the key word for CAGATC_1.fastq fastq file) (Note*****: key has to be unique in the file name)
-key_r2=$5 # key word to recognize read 2 of fastq file (such as "_2" is the key word for CAGATC_2.fastq fastq file) (Note*****: key has to be unique in the file name)
-readnum=$6 # the total number of the read pairs on one of the paired fastq files (read1 or read2)
+fastq_path=${INPUT_DIR:?} # path for the fastq files (Note: this is the only path and file name is not included)
+output_folder=${OUTPUT_DIR:?} # path for the output files (Note: this is the only path and file name is not included)
+fastq_r1=${FASTQ_R1:?} # read 1 file name of paired fastq files
+key_r1=${KEY_R1:?} # key word to recognize read 1 of fastq file (such as "_1" is the key word for CAGATC_1.fastq fastq file) (Note*****: key has to be unique in the file name)
+key_r2=${KEY_R2:?} # key word to recognize read 2 of fastq file (such as "_2" is the key word for CAGATC_2.fastq fastq file) (Note*****: key has to be unique in the file name)
+readnum=${READ_NUM:?} # the total number of the read pairs on one of the paired fastq files (read1 or read2)
 fastq_r2=${fastq_r1/$key_r1/$key_r2}
 
 echo "input-fastq-folder="$fastq_path
@@ -141,83 +141,83 @@ logfile=${fastq_r1}.log
 outsam=${cleaned_fq1/$key_r1/}.sam
 outbam=${outsam/%.sam/.bam}
 outsortbam=${outbam/%.bam/.pcsort.bam}
-outnamesortbamfilepre=${outsortbam/%.bam/.qyname}
+#outnamesortbamfilepre=${outsortbam/%.bam/.qyname}
 outnamesortbamfile=${outsortbam/%.bam/.qyname.bam}
 
 # quality control (using Trimmomatic)
-java -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads $nslots -phred33 -trimlog ${fastq_path}/${logfile} ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
+java $JFLAGS -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads $nslots -phred33 -trimlog ${fastq_path}/${logfile} ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
 
 # bowtie alignment to hg19
 ${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p $nslots -x ${hg19_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_hs_path}/${outsam}
 # sam to bam using samtools
 samtools view -b -S -t $hg19_fai -o ${algn_hs_path}/${outbam} ${algn_hs_path}/${outsam}
 # sort bam file based on coordinates using picard
-java -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_hs_path}/${outbam} O=${algn_hs_path}/${outsortbam}
+java $JFLAGS -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_hs_path}/${outbam} O=${algn_hs_path}/${outsortbam}
 # index sorted bam file using picard
-java -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_hs_path}/${outsortbam} OUTPUT=${algn_hs_path}/${outsortbam}.bai
+java $JFLAGS -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_hs_path}/${outsortbam} OUTPUT=${algn_hs_path}/${outsortbam}.bai
 # sort bam file based on query name
-samtools sort -n ${algn_hs_path}/${outsortbam} ${algn_hs_path}/${outnamesortbamfilepre}
+samtools sort -n ${algn_hs_path}/${outsortbam} -o ${algn_hs_path}/${outnamesortbamfile}
 
 # bowtie alignment to L1Hs
 ${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p $nslots -x ${l1hs_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_te_path}/${outsam}
 # sam to bam using samtools
 samtools view -b -S -t ${l1hs_fai} -o ${algn_te_path}/${outbam} ${algn_te_path}/${outsam}
 # sort bam file based on coordinates using picard
-java -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_te_path}/${outbam} O=${algn_te_path}/${outsortbam}
+java $JFLAGS -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_te_path}/${outbam} O=${algn_te_path}/${outsortbam}
 # index sorted bam file using picard
-java -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_te_path}/${outsortbam} OUTPUT=${algn_te_path}/${outsortbam}.bai
+java $JFLAGS -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_te_path}/${outsortbam} OUTPUT=${algn_te_path}/${outsortbam}.bai
 # sort bam file based on query name
-samtools sort -n ${algn_te_path}/${outsortbam} ${algn_te_path}/${outnamesortbamfilepre}
+samtools sort -n ${algn_te_path}/${outsortbam} -o ${algn_te_path}/${outnamesortbamfile}
 
 ########## second-step: feature calculation for model #############
 
 # P1_ParsingMobileDNAAlignmentFileBowtie2.java (using l1hs aligned query-name-sorted bam file)
-java -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P1_ParsingMobileDNAAlignmentFileBowtie2 ${algn_te_path} ${outnamesortbamfile}
+java $JFLAGS -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P1_ParsingMobileDNAAlignmentFileBowtie2 ${algn_te_path} ${outnamesortbamfile}
 
 # P2_ExtractInfoFromWGAlignmentUsingP1IDList.java (using P1 parsed bed file and hg19 aligned query-name-sorted bam file)
 l1hs_id=${outnamesortbamfile}.1Map2Mis.pairs.ids.only
-java -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P2_ExtractInfoFromWGAlignmentUsingP1IDList ${algn_te_path} ${l1hs_id} ${algn_hs_path} ${outnamesortbamfile}
+java $JFLAGS -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P2_ExtractInfoFromWGAlignmentUsingP1IDList ${algn_te_path} ${l1hs_id} ${algn_hs_path} ${outnamesortbamfile}
 
 # P3_ExtractPolyATInfo.java (using P2 output file and hg19 aligned coordinate-sorted bam file
 pos=${outnamesortbamfile}.L1HSAligned.sc.leftvsright.bed
-java -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P3_ExtractPolyATInfo ${algn_hs_path} ${algn_hs_path} $pos ${outsortbam}
+java $JFLAGS -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P3_ExtractPolyATInfo ${algn_hs_path} ${algn_hs_path} $pos ${outsortbam}
 
 # P4_TRLocator_TargetRegionIdentification.java (using hg19 aligned coordinate-sorted bam file)
-java -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P4_TRLocator_TargetRegionIdentification ${algn_hs_path} ${trlocator_path} ${outsortbam} ${wsize} ${regwsize} ${minreads}
+java $JFLAGS -Xmx10g -classpath ${tipseqjar}:${samjarpath} org/nyumc/TIPseqHunter_20150727/P4_TRLocator_TargetRegionIdentification ${algn_hs_path} ${trlocator_path} ${outsortbam} ${wsize} ${regwsize} ${minreads}
 
 # P5_CandidateInsertionSiteIdentification.java (using target file from P4 and clipping file from P3)
 regfile=${outsortbam}.w${wsize}.minreg${regwsize}.mintag${minreads}.bed
 clipfile=${outnamesortbamfile}.L1HSAligned.sc.leftvsright.bed.consensusbp
-java -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P5_CandidateInsertionSiteIdentification ${trlocator_path} ${algn_hs_path} ${regfile} ${clipfile} ${wsize} ${regwsize} ${minreads} ${clip} ${clipflk} ${mindis}
+java $JFLAGS -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P5_CandidateInsertionSiteIdentification ${trlocator_path} ${algn_hs_path} ${regfile} ${clipfile} ${wsize} ${regwsize} ${minreads} ${clip} ${clipflk} ${mindis}
 
 # P6_IdentificationOfExistingMobileDNASite.java
 bed1=${clipfile}.wsize${wsize}.regwsize${regwsize}.minreads${minreads}.clip${clip}.clipflk${clipflk}.mindis${mindis}.bed
 feature_p6=${bed1/.cleaned.fastq.pcsort.qyname.bam.L1HSAligned.sc.leftvsright.bed.consensusbp/}
 cp ${algn_hs_path}/${bed1} ${feature_path}/${feature_p6}
-java -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P6_IdentificationOfExistingMobileDNASite ${feature_path} ${positive_anno_path} ${feature_p6} ${positive_anno_file} ${bed1flk} ${bed1chr} ${bed1s} ${bed1e} ${bed2chr} ${bed2s} ${bed2e} ${bed2add1} ${bed2add2} ${bed2add3} ${outnamekey1} ${ifheader}
+java $JFLAGS -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P6_IdentificationOfExistingMobileDNASite ${feature_path} ${positive_anno_path} ${feature_p6} ${positive_anno_file} ${bed1flk} ${bed1chr} ${bed1s} ${bed1e} ${bed2chr} ${bed2s} ${bed2e} ${bed2add1} ${bed2add2} ${bed2add3} ${outnamekey1} ${ifheader}
 
 # P7_IdentificationOfUniqueMatchToExistingMobileDNASite.java
 feature_p7=${feature_p6/%.bed/}
 feature_p7=${feature_p7}.${outnamekey1}
-java -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P7_IdentificationOfUniqueMatchToExistingMobileDNASite ${feature_path} ${feature_p7} $sc $gs ${outnamekey2} ${ifheader}
+java $JFLAGS -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P7_IdentificationOfUniqueMatchToExistingMobileDNASite ${feature_path} ${feature_p7} $sc $gs ${outnamekey2} ${ifheader}
 
 # P8_ExtractEnzymeCuttingSite.java
 feature_p8=${feature_p7/%.bed/}
 feature_p8=${feature_p8}.${outnamekey2}
-java -Djava.awt.headless=true -Xmx30g -classpath ${tipseqjar}:${jfjarpath}:${jcommonpath}:${jtextpath} org/nyumc/TIPseqHunter_20150727/P8_ExtractEnzymeCuttingSite ${pathezm} ${feature_path} $ezm ${feature_p8} $dis
+java $JFLAGS -Djava.awt.headless=true -Xmx30g -classpath ${tipseqjar}:${jfjarpath}:${jcommonpath}:${jtextpath} org/nyumc/TIPseqHunter_20150727/P8_ExtractEnzymeCuttingSite ${pathezm} ${feature_path} $ezm ${feature_p8} $dis
 
 # P9_DPperCSAndUniqueAlignProperAlignPercent.java
 feature_p9=${feature_p8}.csinfo
-java -Xmx30g -classpath ${tipseqjar}:${samjarpath}:${mathjarpath} org/nyumc/TIPseqHunter_20150727/P9_DPperCSAndUniqueAlignProperAlignPercent ${feature_path} ${algn_hs_path} ${feature_p9} ${outsortbam}
+java $JFLAGS -Xmx30g -classpath ${tipseqjar}:${samjarpath}:${mathjarpath} org/nyumc/TIPseqHunter_20150727/P9_DPperCSAndUniqueAlignProperAlignPercent ${feature_path} ${algn_hs_path} ${feature_p9} ${outsortbam}
 
 # P10_IdentificationOfL1HsPrimer5PrimeEnd.java
 feature_p10=${feature_p9}.lm.read.IDs
 feature_p10_reg=${feature_p9}.lm
-java -Xmx30g -classpath ${tipseqjar}:${samjarpath}:${mathjarpath}:${biojavapath} org/nyumc/TIPseqHunter_20150727/P10_IdentificationOfL1HsPrimer5PrimeEnd ${feature_path} ${feature_p10} ${feature_p10_reg} ${algn_te_path} ${outnamesortbamfile} ${l1hsseq}
+java $JFLAGS -Xmx30g -classpath ${tipseqjar}:${samjarpath}:${mathjarpath}:${biojavapath} org/nyumc/TIPseqHunter_20150727/P10_IdentificationOfL1HsPrimer5PrimeEnd ${feature_path} ${feature_p10} ${feature_p10_reg} ${algn_te_path} ${outnamesortbamfile} ${l1hsseq}
 
 ########## second-step: build modeling and prediction #############
 
 # P11_ModelBuildAndPredict.java
 feature_p11=${feature_p10_reg}.l1hs
 cp ${feature_path}/${feature_p11} ${model_path}/${feature_p11}
-java -Djava.awt.headless=true -classpath ${tipseqjar}:${jfjarpath}:${jcommonpath}:${jtextpath} org/nyumc/TIPseqHunter_20150727/P11_ModelBuildAndPredict ${model_path} ${feature_p11} ${readnum} ${l1hskey}
+java $JFLAGS -Djava.awt.headless=true -classpath ${tipseqjar}:${jfjarpath}:${jcommonpath}:${jtextpath} org/nyumc/TIPseqHunter_20150727/P11_ModelBuildAndPredict ${model_path} ${feature_p11} ${readnum} ${l1hskey}

@@ -1,17 +1,18 @@
 # import config.
 # You can change the default config with `make cnf="config_special.env" build`
 cnf ?= config.env
-include $(cnf)
-export $(shell sed 's/=.*//' $(cnf))
+-include $(cnf)
+#export $(shell sed 's/=.*//' $(cnf))
 
 # import deploy config
 # You can change the default deploy config with `make cnf="deploy_special.env" release`
-dpl ?= deploy.env
+ROOT_DIR := $(dir $(realpath $(firstword $(MAKEFILE_LIST))))
+dpl ?= $(ROOT_DIR)/deploy.env
 include $(dpl)
-export $(shell sed 's/=.*//' $(dpl))
+#export $(shell sed 's/=.*//' $(dpl))
 
 # grep the version from the mix file
-VERSION=$(shell ./version.sh)
+VERSION=$(shell $(ROOT_DIR)/version.sh)
 
 
 # HELP
@@ -30,13 +31,21 @@ help: ## This help.
 # Build the container
 .PHONY: build
 
-build: ## Build the container
-	docker build -t $(APP_NAME) .
+build: ## Build the image
+	@echo 'Build $(APP_NAME) image'
+	docker build --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
 
 .PHONY: build-nc
 
-build-nc: ## Build the container without caching
-	docker build --no-cache -t $(APP_NAME) .
+build-nc: ## Build the image without caching
+	@echo 'Build $(APP_NAME) image no caching'
+	docker build --no-cache --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
+
+.PHONY: remove
+
+remove: ## Remove the image
+	@echo 'Remove $(APP_NAME) image'
+	docker rmi $(APP_NAME)
 
 # Run the container
 .PHONY: run
@@ -45,21 +54,19 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 
 .PHONY: run-pipeline
 
-run-pipeline: check-args ## Run TIPseqHunterPipelineJar.sh
-	docker run --rm -u $(shell id -u):$(shell id -g) --env-file=$(cnf) --name=$(APP_NAME) \
+run-pipeline: check-env ## Run TIPseqHunterPipelineJar.sh
+	@echo 'Run TIPseqHunterPipelineJar.sh $(args)'
+	docker run \
+		--rm \
+		-u $(shell id -u):$(shell id -g) \
+		--env-file=$(cnf) \
+		--name=$(CONTAINER_NAME) \
 		-v /etc/passwd:/etc/passwd:ro \
-		-v $(hg19_refindex):$(hg19_refindex):ro \
-		-v $(hg19_fai):$(hg19_fai):ro \
-		-v $(l1hs_refindex):$(l1hs_refindex):ro \
-		-v $(l1hs_fai):$(l1hs_fai):ro \
-		-v $(adapterfa):$(adapterfa):ro \
-		-v $(positive_anno_path):$(positive_anno_path):ro \
-		-v $(pathezm):$(pathezm):ro \
-		-v $(l1hsseq):$(l1hsseq):ro \
-		-v $(word 1,$(args)):$(word 1,$(args)) \
-		-v $(word 2,$(args)):$(word 2,$(args)) \
-		-w $(word 2,$(args)) \
-		$(APP_NAME) TIPseqHunterPipelineJar.sh $(args)
+		-v /etc/group:/etc/group:ro \
+		-v $(INPUT_DIR):$(INPUT_DIR) \
+		-v $(OUTPUT_DIR):$(OUTPUT_DIR) \
+		-w $(OUTPUT_DIR) \
+		$(APP_NAME) TIPseqHunterPipelineJar.sh
 
 
 .PHONY: run-pipeline-somatic
@@ -73,15 +80,18 @@ up: build run ## Run TIPseqHunter pipeline completely (Alias to run)
 
 .PHONY: check-args
 
-check-args: ## Check if variable `args` is defined
-ifndef args
-	$(error 'args' is not defined)
+check-env: ## Check if INPUT_DIR/OUTPUT_DIR `args` are defined
+ifndef INPUT_DIR
+	$(error 'INPUT_DIR' is not defined)
+endif
+ifndef OUTPUT_DIR
+	$(error 'OUTPUT_DIR' is not defined)
 endif
 
 .PHONY: stop
 
 stop: ## Stop and remove a running container
-	docker stop $(APP_NAME); docker rm $(APP_NAME)
+	docker stop $(CONTAINER_NAME); docker rm $(CONTAINER_NAME)
 
 .PHONY: release
 
@@ -90,7 +100,7 @@ release: build publish ## Make a release by building and publishing the `{versio
 # Docker publish
 .PHONY: publish
 
-publish: repo-login publish-latest publish-version ## Publish the `{version}` ans `latest` tagged containers to dockerhub
+publish: repo-login publish-latest publish-version repo-logout ## Publish the `{version}` ans `latest` tagged containers to dockerhub
 
 .PHONY: publish-latest
 
@@ -129,6 +139,10 @@ tag-version: ## Generate container `latest` tag
 repo-login: ## Login to dockerhub registry
 	@echo 'login to dockerhub registry'
 	docker login -u $(USER_NAME)
+
+repo-logout: ## Logout from dockerhub registry
+	@echo 'logout from dockerhub registry'
+	docker logout
 
 .PHONY: version
 
