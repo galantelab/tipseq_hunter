@@ -54,9 +54,11 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 
 .PHONY: run-pipeline
 
-run-pipeline: check-env ## Run TIPseqHunterPipelineJar.sh
+run-pipeline: check-env $(OUTPUT_DIR)/pipeline.stamp
+
+$(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
 	@echo 'TIPseqHunterPipelineJar.sh $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)'
-	docker run \
+	@docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
 		--env-file=$(cnf) \
@@ -66,16 +68,46 @@ run-pipeline: check-env ## Run TIPseqHunterPipelineJar.sh
 		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
 		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJar.sh >&2
+		$(APP_NAME) TIPseqHunterPipelineJar.sh >&2 && touch $@
+
+$(OUTPUT_DIR)/pipeline.stamp: $(addprefix $(INPUT_DIR)/,$(FASTQ_R1) $(FASTQ_R1:$(KEY_R1)=$(KEY_R2)))
+
+$(OUTPUT_DIR)/pipeline.stamp: | $(OUTPUT_DIR)
+
+$(OUTPUT_DIR):
+	mkdir -p $@
 
 .PHONY: run-pipeline-somatic
 
-run-pipeline-somatic: check-args ## Run TIPseqHunterPipelineJarSomatic.sh
-	docker run --rm --env-file=$(cnf) --name=$(APP_NAME) $(APP_NAME)
+REPRED_SUFFIX := fastq.wsize100.regwsize1.minreads1.clip1.clipflk5.mindis150.rmskta.uniqgs.bed.csinfo.lm.l1hs.pred.txt.repred
+MINTAG_SUFFIX := fastq.cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed
+FASTQ_PREFFIX := $(firstword $(subst _, ,$(FASTQ_R1)))_
+REPRED_FILE := $(FASTQ_PREFFIX).$(REPRED_SUFFIX)
+MINTAG_FILE := $(FASTQ_PREFFIX).$(MINTAG_SUFFIX)
+
+run-pipeline-somatic: check-env $(OUTPUT_DIR)/pipeline-somatic.stamp
+
+$(OUTPUT_DIR)/pipeline-somatic.stamp: ## Run TIPseqHunterPipelineJarSomatic.sh
+	@echo 'TIPseqHunterPipelineJarSomatic.sh $(OUTPUT_DIR)/model $(OUTPUT_DIR)/TRLocator $(REPRED_FILE) $(MINTAG_FILE)'
+	@docker run \
+		--rm \
+		-u $(shell id -u):$(shell id -g) \
+		--env-file=$(cnf) \
+		-e REPRED_FILE=$(REPRED_FILE) \
+		-e MINTAG_FILE=$(MINTAG_FILE) \
+		--name=$(CONTAINER_NAME) \
+		-v /etc/passwd:/etc/passwd:ro \
+		-v /etc/group:/etc/group:ro \
+		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
+		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
+		-w $(OUTPUT_DIR) \
+		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh >&2 && touch $@
+
+$(OUTPUT_DIR)/pipeline-somatic.stamp: $(addprefix $(OUTPUT_DIR)/,pipeline.stamp model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
 
 .PHONY: up
 
-up: build run ## Run TIPseqHunter pipeline completely (Alias to run)
+up: build run ## Build and run TIPseqHunter pipeline completely
 
 .PHONY: check-env
 
