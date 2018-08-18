@@ -33,13 +33,13 @@ help: ## This help.
 
 build: ## Build the image
 	@echo 'Build $(APP_NAME) image'
-	docker build --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
+	cd $(ROOT_DIR) && docker build --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
 
 .PHONY: build-nc
 
 build-nc: ## Build the image without caching
 	@echo 'Build $(APP_NAME) image no caching'
-	docker build --no-cache --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
+	cd $(ROOT_DIR) && docker build --no-cache --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
 
 .PHONY: remove
 
