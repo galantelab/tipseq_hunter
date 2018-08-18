@@ -1,2 +1,2 @@
 # TIPSeqHunter Pipeline Version
-echo 2.0
+echo release-1.0
