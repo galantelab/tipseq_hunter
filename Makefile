@@ -54,6 +54,8 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 
 .PHONY: run-pipeline
 
+FASTQS := $(addprefix $(INPUT_DIR)/,$(FASTQ_R1) $(subst $(KEY_R1),$(KEY_R2),$(FASTQ_R1)))
+
 run-pipeline: check-env $(OUTPUT_DIR)/pipeline.stamp
 
 $(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
@@ -70,7 +72,10 @@ $(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
 		-w $(OUTPUT_DIR) \
 		$(APP_NAME) TIPseqHunterPipelineJar.sh >&2 && touch $@
 
-$(OUTPUT_DIR)/pipeline.stamp: $(addprefix $(INPUT_DIR)/,$(FASTQ_R1) $(FASTQ_R1:$(KEY_R1)=$(KEY_R2)))
+$(OUTPUT_DIR)/pipeline.stamp: $(FASTQS)
+
+$(FASTQS):
+	$(error 'Not found $@: Verify the variables INPUT_DIR, FASTQ_R1, KEY_R1, KEY_R2')
 
 $(OUTPUT_DIR)/pipeline.stamp: | $(OUTPUT_DIR)
 
@@ -84,6 +89,7 @@ MINTAG_SUFFIX := fastq.cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed
 FASTQ_PREFFIX := $(firstword $(subst _, ,$(FASTQ_R1)))_
 REPRED_FILE := $(FASTQ_PREFFIX).$(REPRED_SUFFIX)
 MINTAG_FILE := $(FASTQ_PREFFIX).$(MINTAG_SUFFIX)
+MODEL_FILES := $(addprefix $(OUTPUT_DIR)/,model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
 
 run-pipeline-somatic: check-env $(OUTPUT_DIR)/pipeline-somatic.stamp
 
@@ -103,7 +109,10 @@ $(OUTPUT_DIR)/pipeline-somatic.stamp: ## Run TIPseqHunterPipelineJarSomatic.sh
 		-w $(OUTPUT_DIR) \
 		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh >&2 && touch $@
 
-$(OUTPUT_DIR)/pipeline-somatic.stamp: $(addprefix $(OUTPUT_DIR)/,pipeline.stamp model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
+$(OUTPUT_DIR)/pipeline-somatic.stamp: $(OUTPUT_DIR)/pipeline.stamp $(MODEL_FILES)
+
+$(MODEL_FILES):
+	$(error 'Not found $@: An error may have occurred in the step run-pipeline')
 
 .PHONY: up
 
