@@ -35,12 +35,12 @@ ezm="vectorette-enzyme-cutting-site-info.txt.wgsrh"
 l1hsseq="/download_data/Homo_sapiens_L1.L1HS.fa"
 
 # input parameters
-fastq_path=${INPUT_DIR:?} # path for the fastq files (Note: this is the only path and file name is not included)
-output_folder=${OUTPUT_DIR:?} # path for the output files (Note: this is the only path and file name is not included)
-fastq_r1=${FASTQ_R1:?} # read 1 file name of paired fastq files
-key_r1=${KEY_R1:?} # key word to recognize read 1 of fastq file (such as "_1" is the key word for CAGATC_1.fastq fastq file) (Note*****: key has to be unique in the file name)
-key_r2=${KEY_R2:?} # key word to recognize read 2 of fastq file (such as "_2" is the key word for CAGATC_2.fastq fastq file) (Note*****: key has to be unique in the file name)
-readnum=${READ_NUM:?} # the total number of the read pairs on one of the paired fastq files (read1 or read2)
+fastq_path=$1 # path for the fastq files (Note: this is the only path and file name is not included)
+output_folder=$2 # path for the output files (Note: this is the only path and file name is not included)
+fastq_r1=$3 # read 1 file name of paired fastq files
+key_r1=$4 # key word to recognize read 1 of fastq file (such as "_1" is the key word for CAGATC_1.fastq fastq file) (Note*****: key has to be unique in the file name)
+key_r2=$5 # key word to recognize read 2 of fastq file (such as "_2" is the key word for CAGATC_2.fastq fastq file) (Note*****: key has to be unique in the file name)
+readnum=$6 # the total number of the read pairs on one of the paired fastq files (read1 or read2)
 fastq_r2=${fastq_r1/$key_r1/$key_r2}
 
 echo "input-fastq-folder="$fastq_path

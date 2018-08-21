@@ -55,22 +55,24 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 .PHONY: run-pipeline
 
 FASTQS := $(addprefix $(INPUT_DIR)/,$(FASTQ_R1) $(subst $(KEY_R1),$(KEY_R2),$(FASTQ_R1)))
+RUN_PIPELINE_CMD := $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)
 
 run-pipeline: check-env $(OUTPUT_DIR)/pipeline.stamp
 
 $(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
-	@echo 'TIPseqHunterPipelineJar.sh $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)'
+	@echo 'TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_CMD)'
 	@docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
-		--env-file=$(cnf) \
+		-e JFLAGS=$(JFLAGS) \
+		-e THREADS=$(THREADS) \
 		--name=$(CONTAINER_NAME) \
 		-v /etc/passwd:/etc/passwd:ro \
 		-v /etc/group:/etc/group:ro \
 		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
 		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJar.sh >&2 && touch $@
+		$(APP_NAME) TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_CMD) >&2 && touch $@
 
 $(OUTPUT_DIR)/pipeline.stamp: $(FASTQS)
 
@@ -90,24 +92,24 @@ FASTQ_PREFFIX := $(firstword $(subst _, ,$(FASTQ_R1)))_
 REPRED_FILE := $(FASTQ_PREFFIX).$(REPRED_SUFFIX)
 MINTAG_FILE := $(FASTQ_PREFFIX).$(MINTAG_SUFFIX)
 MODEL_FILES := $(addprefix $(OUTPUT_DIR)/,model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
+RUN_PIPELINE_SOMATIC_CMD := $(OUTPUT_DIR)/model $(OUTPUT_DIR)/TRLocator $(REPRED_FILE) $(MINTAG_FILE)
 
 run-pipeline-somatic: check-env $(OUTPUT_DIR)/pipeline-somatic.stamp
 
 $(OUTPUT_DIR)/pipeline-somatic.stamp: ## Run TIPseqHunterPipelineJarSomatic.sh
-	@echo 'TIPseqHunterPipelineJarSomatic.sh $(OUTPUT_DIR)/model $(OUTPUT_DIR)/TRLocator $(REPRED_FILE) $(MINTAG_FILE)'
+	@echo 'TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_CMD)'
 	@docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
-		--env-file=$(cnf) \
-		-e REPRED_FILE=$(REPRED_FILE) \
-		-e MINTAG_FILE=$(MINTAG_FILE) \
+		-e JFLAGS=$(JFLAGS) \
+		-e THREADS=$(THREADS) \
 		--name=$(CONTAINER_NAME) \
 		-v /etc/passwd:/etc/passwd:ro \
 		-v /etc/group:/etc/group:ro \
 		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
 		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh >&2 && touch $@
+		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_CMD) >&2 && touch $@
 
 $(OUTPUT_DIR)/pipeline-somatic.stamp: $(OUTPUT_DIR)/pipeline.stamp $(MODEL_FILES)
 

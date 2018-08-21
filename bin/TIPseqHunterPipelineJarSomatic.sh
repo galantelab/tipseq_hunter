@@ -28,10 +28,10 @@ l1hsprimer_end_noA_rc="ATTATACTCTAAGTTTTAGGGTACATGTGCACATTGTGCAGGTTAGTTACATATGTA
 l1hsprimer="a(5904)"
 
 # input parameters
-repred_path=${OUTPUT_DIR:?}/model # the file ending with ".repred" and generated from P11 in "model" folder
-control_path=${OUTPUT_DIR:?}/TRLocator # this path should be the "TRLocator" folder output from previous shell script
-repred_file=${REPRED_FILE:?} # input file (predicted result from TIPseqHunter pipeline) (Note*****: file name should be ending with ".repred".) (such as 302_T_GTCCGC.wsize100.regwsize1.minreads1.clip1.clipflk5.mindis150.FP.uniqgs.bed.csinfo.lm.l1hs.pred.txt.repred)
-control_file=${MINTAG_FILE:?} # this file should be the normal tissue file in the TRLocator (Note*****: file name should be ending with ".w100.minreg1.mintag1.bed".) (such as 302_N_GTGAAA.fastq.cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed)
+repred_path=$1 # the file ending with ".repred" and generated from P11 in "model" folder
+control_path=$2 # this path should be the "TRLocator" folder output from previous shell script
+repred_file=$3 # input file (predicted result from TIPseqHunter pipeline) (Note*****: file name should be ending with ".repred".) (such as 302_T_GTCCGC.wsize100.regwsize1.minreads1.clip1.clipflk5.mindis150.FP.uniqgs.bed.csinfo.lm.l1hs.pred.txt.repred)
+control_file=$4 # this file should be the normal tissue file in the TRLocator (Note*****: file name should be ending with ".w100.minreg1.mintag1.bed".) (such as 302_N_GTGAAA.fastq.cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed)
 
 echo "repred-path="$repred_path
 echo "repred-file="$repred_file
