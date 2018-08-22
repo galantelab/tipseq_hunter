@@ -137,7 +137,7 @@ cleaned_fq1=${fastq_r1}.cleaned.fastq
 cleaned_fq2=${fastq_r2}.cleaned.fastq
 outrmfq1=${fastq_r1}.removed.fastq
 outrmfq2=${fastq_r2}.removed.fastq
-logfile=${fastq_r1}.log
+#logfile=${fastq_r1}.log
 outsam=${cleaned_fq1/$key_r1/}.sam
 outbam=${outsam/%.sam/.bam}
 outsortbam=${outbam/%.bam/.pcsort.bam}
@@ -145,7 +145,7 @@ outsortbam=${outbam/%.bam/.pcsort.bam}
 outnamesortbamfile=${outsortbam/%.bam/.qyname.bam}
 
 # quality control (using Trimmomatic)
-java $JFLAGS -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads $nslots -phred33 -trimlog ${fastq_path}/${logfile} ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
+java $JFLAGS -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads $nslots -phred33 ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
 
 # bowtie alignment to hg19
 ${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p $nslots -x ${hg19_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_hs_path}/${outsam}

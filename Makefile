@@ -32,19 +32,19 @@ help: ## This help.
 .PHONY: build
 
 build: ## Build the image
-	@echo 'Build $(APP_NAME) image'
+	$(info Build $(APP_NAME) image)
 	cd $(ROOT_DIR) && docker build --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
 
 .PHONY: build-nc
 
 build-nc: ## Build the image without caching
-	@echo 'Build $(APP_NAME) image no caching'
+	$(info Build $(APP_NAME) image no caching)
 	cd $(ROOT_DIR) && docker build --no-cache --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
 
 .PHONY: remove
 
 remove: ## Remove the image
-	@echo 'Remove $(APP_NAME) image'
+	$(info Remove $(APP_NAME) image)
 	docker rmi $(APP_NAME)
 
 # Run the container
@@ -55,12 +55,12 @@ run: run-pipeline run-pipeline-somatic ## Run TIPseqHunter pipeline completely
 .PHONY: run-pipeline
 
 FASTQS := $(addprefix $(INPUT_DIR)/,$(FASTQ_R1) $(subst $(KEY_R1),$(KEY_R2),$(FASTQ_R1)))
-RUN_PIPELINE_CMD := $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)
+RUN_PIPELINE_ARGS := $(INPUT_DIR) $(OUTPUT_DIR) $(FASTQ_R1) $(KEY_R1) $(KEY_R2) $(READ_NUM)
 
 run-pipeline: check-env $(OUTPUT_DIR)/pipeline.stamp
 
 $(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
-	@echo 'TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_CMD)'
+	$(info TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_ARGS))
 	@docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
@@ -72,7 +72,7 @@ $(OUTPUT_DIR)/pipeline.stamp: ## Run TIPseqHunterPipelineJar.sh
 		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
 		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_CMD) >&2 && touch $@
+		$(APP_NAME) TIPseqHunterPipelineJar.sh $(RUN_PIPELINE_ARGS) >&2 && touch $@
 
 $(OUTPUT_DIR)/pipeline.stamp: $(FASTQS)
 
@@ -92,12 +92,12 @@ FASTQ_PREFFIX := $(firstword $(subst _, ,$(FASTQ_R1)))_
 REPRED_FILE := $(FASTQ_PREFFIX).$(REPRED_SUFFIX)
 MINTAG_FILE := $(FASTQ_PREFFIX).$(MINTAG_SUFFIX)
 MODEL_FILES := $(addprefix $(OUTPUT_DIR)/,model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
-RUN_PIPELINE_SOMATIC_CMD := $(OUTPUT_DIR)/model $(OUTPUT_DIR)/TRLocator $(REPRED_FILE) $(MINTAG_FILE)
+RUN_PIPELINE_SOMATIC_ARGS := $(OUTPUT_DIR)/model $(OUTPUT_DIR)/TRLocator $(REPRED_FILE) $(MINTAG_FILE)
 
 run-pipeline-somatic: check-env $(OUTPUT_DIR)/pipeline-somatic.stamp
 
 $(OUTPUT_DIR)/pipeline-somatic.stamp: ## Run TIPseqHunterPipelineJarSomatic.sh
-	@echo 'TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_CMD)'
+	$(info TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_ARGS))
 	@docker run \
 		--rm \
 		-u $(shell id -u):$(shell id -g) \
@@ -109,7 +109,7 @@ $(OUTPUT_DIR)/pipeline-somatic.stamp: ## Run TIPseqHunterPipelineJarSomatic.sh
 		-v $(strip $(INPUT_DIR)):$(strip $(INPUT_DIR)) \
 		-v $(strip $(OUTPUT_DIR)):$(strip $(OUTPUT_DIR)) \
 		-w $(OUTPUT_DIR) \
-		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_CMD) >&2 && touch $@
+		$(APP_NAME) TIPseqHunterPipelineJarSomatic.sh $(RUN_PIPELINE_SOMATIC_ARGS) >&2 && touch $@
 
 $(OUTPUT_DIR)/pipeline-somatic.stamp: $(OUTPUT_DIR)/pipeline.stamp $(MODEL_FILES)
 
@@ -133,7 +133,7 @@ endif
 .PHONY: stop
 
 stop: ## Stop and remove a running container
-	docker stop $(CONTAINER_NAME); docker rm $(CONTAINER_NAME)
+	docker stop $(CONTAINER_NAME)
 
 .PHONY: release
 
@@ -147,13 +147,13 @@ publish: repo-login publish-latest publish-version repo-logout ## Publish the `{
 .PHONY: publish-latest
 
 publish-latest: tag-latest ## Publish the `latest` taged container to dockerhub
-	@echo 'publish latest to $(DOCKER_REPO)'
+	$(info publish latest to $(DOCKER_REPO))
 	docker push $(DOCKER_REPO)/$(APP_NAME):latest
 
 .PHONY: publish-version
 
 publish-version: tag-version ## Publish the `{version}` taged container to dockerhub
-	@echo 'publish $(VERSION) to $(DOCKER_REPO)'
+	$(info publish $(VERSION) to $(DOCKER_REPO))
 	docker push $(DOCKER_REPO)/$(APP_NAME):$(VERSION)
 
 # Docker tagging
@@ -164,13 +164,13 @@ tag: tag-latest tag-version ## Generate container tags for the `{version}` ans `
 .PHONY: tag-latest
 
 tag-latest: ## Generate container `{version}` tag
-	@echo 'create tag latest'
+	$(info create tag latest)
 	docker tag $(APP_NAME) $(DOCKER_REPO)/$(APP_NAME):latest
 
 .PHONY: tag-version
 
 tag-version: ## Generate container `latest` tag
-	@echo 'create tag $(VERSION)'
+	$(info create tag $(VERSION))
 	docker tag $(APP_NAME) $(DOCKER_REPO)/$(APP_NAME):$(VERSION)
 
 # HELPERS
@@ -179,15 +179,15 @@ tag-version: ## Generate container `latest` tag
 .PHONY: repo-login
 
 repo-login: ## Login to dockerhub registry
-	@echo 'login to dockerhub registry'
-	docker login -u $(USER_NAME)
+	$(info login to dockerhub registry)
+	docker login -u $(DOCKER_REPO)
 
 repo-logout: ## Logout from dockerhub registry
-	@echo 'logout from dockerhub registry'
+	$(info logout from dockerhub registry)
 	docker logout
 
 .PHONY: version
 
 version: ## Output the current version
-	@echo $(VERSION)
+	$(info $(VERSION)
 
