@@ -86,9 +86,9 @@ $(OUTPUT_DIR):
 
 .PHONY: run-pipeline-somatic
 
-REPRED_SUFFIX := fastq.wsize100.regwsize1.minreads1.clip1.clipflk5.mindis150.rmskta.uniqgs.bed.csinfo.lm.l1hs.pred.txt.repred
-MINTAG_SUFFIX := fastq.cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed
-FASTQ_PREFFIX := $(firstword $(subst _, ,$(FASTQ_R1)))_
+REPRED_SUFFIX := wsize100.regwsize1.minreads1.clip1.clipflk5.mindis150.rmskta.uniqgs.bed.csinfo.lm.l1hs.pred.txt.repred
+MINTAG_SUFFIX := cleaned.fastq.pcsort.bam.w100.minreg1.mintag1.bed
+FASTQ_PREFFIX := $(subst $(KEY_R1),,$(FASTQ_R1))
 REPRED_FILE := $(FASTQ_PREFFIX).$(REPRED_SUFFIX)
 MINTAG_FILE := $(FASTQ_PREFFIX).$(MINTAG_SUFFIX)
 MODEL_FILES := $(addprefix $(OUTPUT_DIR)/,model/$(REPRED_FILE) TRLocator/$(MINTAG_FILE))
