@@ -145,29 +145,29 @@ outsortbam=${outbam/%.bam/.pcsort.bam}
 outnamesortbamfile=${outsortbam/%.bam/.qyname.bam}
 
 # quality control (using Trimmomatic)
-java $JFLAGS -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads $nslots -phred33 ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
+java $JFLAGS -jar ${trimmomaticpath}/trimmomatic-0.32.jar PE -threads ${nslots} -phred33 ${fastq_path}/${fastq_r1} ${fastq_path}/${fastq_r2} ${fastq_path}/${cleaned_fq1} ${fastq_path}/${outrmfq1} ${fastq_path}/${cleaned_fq2} ${fastq_path}/${outrmfq2} ILLUMINACLIP:${adapterfa}:3:30:7:1:TRUE LEADING:2 TRAILING:2 SLIDINGWINDOW:4:10 MINLEN:36
 
 # bowtie alignment to hg19
-${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p $nslots -x ${hg19_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_hs_path}/${outsam}
+${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p ${nslots} -x ${hg19_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_hs_path}/${outsam}
 # sam to bam using samtools
-samtools view -b -S -t $hg19_fai -o ${algn_hs_path}/${outbam} ${algn_hs_path}/${outsam}
+samtools view -@ ${nslots} -b -S -t $hg19_fai -o ${algn_hs_path}/${outbam} ${algn_hs_path}/${outsam}
 # sort bam file based on coordinates using picard
 java $JFLAGS -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_hs_path}/${outbam} O=${algn_hs_path}/${outsortbam}
 # index sorted bam file using picard
 java $JFLAGS -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_hs_path}/${outsortbam} OUTPUT=${algn_hs_path}/${outsortbam}.bai
 # sort bam file based on query name
-samtools sort -n ${algn_hs_path}/${outsortbam} -o ${algn_hs_path}/${outnamesortbamfile}
+samtools sort -@ ${nslots} -n ${algn_hs_path}/${outsortbam} -o ${algn_hs_path}/${outnamesortbamfile}
 
 # bowtie alignment to L1Hs
-${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p $nslots -x ${l1hs_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_te_path}/${outsam}
+${bowtie2path}/bowtie2 -X $Xvalue --local --phred33 --sensitive -p ${nslots} -x ${l1hs_refindex} -1 ${fastq_path}/${cleaned_fq1} -2 ${fastq_path}/${cleaned_fq2} -S ${algn_te_path}/${outsam}
 # sam to bam using samtools
-samtools view -b -S -t ${l1hs_fai} -o ${algn_te_path}/${outbam} ${algn_te_path}/${outsam}
+samtools view -@ ${nslots} -b -S -t ${l1hs_fai} -o ${algn_te_path}/${outbam} ${algn_te_path}/${outsam}
 # sort bam file based on coordinates using picard
 java $JFLAGS -jar ${picardpath}/SortSam.jar SO=coordinate VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 I=${algn_te_path}/${outbam} O=${algn_te_path}/${outsortbam}
 # index sorted bam file using picard
 java $JFLAGS -jar ${picardpath}/BuildBamIndex.jar VALIDATION_STRINGENCY=SILENT MAX_RECORDS_IN_RAM=500000 INPUT=${algn_te_path}/${outsortbam} OUTPUT=${algn_te_path}/${outsortbam}.bai
 # sort bam file based on query name
-samtools sort -n ${algn_te_path}/${outsortbam} -o ${algn_te_path}/${outnamesortbamfile}
+samtools sort -@ ${nslots} -n ${algn_te_path}/${outsortbam} -o ${algn_te_path}/${outnamesortbamfile}
 
 ########## second-step: feature calculation for model #############
 
