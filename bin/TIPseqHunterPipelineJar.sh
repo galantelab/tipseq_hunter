@@ -50,18 +50,18 @@ echo "fastq-read2="$fastq_r2
 echo "total-number-of-reads-in-one-fastq="$readnum
 
 # for Bowtie2 alignment
-Xvalue=1000 # please reference to bowtie software
+Xvalue=${XVALUE:-1000} # please reference to bowtie software
 nslots=${THREADS:-8} # number of cpus for alignment
 # for P4
-wsize=100 # (base pair for peak identification) two neighbour peaks will be merged together if the distance between two peaks is less than window size
-regwsize=1 # minimum width of peak (base pair)
-minreads=1 # minimum number of reads within peak (count)
+wsize=${WSIZE:-100} # (base pair for peak identification) two neighbour peaks will be merged together if the distance between two peaks is less than window size
+regwsize=${REGWSIZE:-1} # minimum width of peak (base pair)
+minreads=${MINREADS:-1} # minimum number of reads within peak (count)
 # for P5
-clip=1 # minimum number of supporting clipped reads
-clipflk=5 # number of flanking base pairs on each side based on qualified clipping position selected
-mindis=150 # minimum distance of clipping position to the both ends of peak (not using now)
+clip=${CLIP:-1} # minimum number of supporting clipped reads
+clipflk=${CLIPFLK:-5} # number of flanking base pairs on each side based on qualified clipping position selected
+mindis=${MINDIS:-150} # minimum distance of clipping position to the both ends of peak (not using now)
 # for P6
-bed1flk=100 # number of flanking base pairs on each side for overlapping regions
+bed1flk=${BED1FLK:-100} # number of flanking base pairs on each side for overlapping regions
 bed1chr=4 # column number of chormosome (starting from 0) on first bed file
 bed1s=5 # column number of target start position (starting from 0) on first bed file
 bed1e=6 # column number of target end position (starting from 0) on first bed file
@@ -79,7 +79,7 @@ gs=16 # column number of positive instance annotation
 outnamekey2=uniqgs.bed # key information for the output file name (such as uniqgs stands for unique gold standarded)
 ifheader=FALSE # if the file has header
 # for P8
-dis=5000 # the maximum region calculated for average coverage of enzyme cutting sites. output file is a pdf file
+dis=${DIS:-5000} # the maximum region calculated for average coverage of enzyme cutting sites. output file is a pdf file
 # for P11
 l1hskey='a(5904)' # information of nucleiotide and L1Hs reference genome location for L1Hs primer
 

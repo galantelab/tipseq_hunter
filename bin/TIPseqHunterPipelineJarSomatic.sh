@@ -16,15 +16,14 @@ eumrip="euL1db_hg19_MRIP_20151222.simple.noheader.bed"
 refseqpath="/refseq_gft"
 refseq="refFlat-20160208.txt"
 
-# Hardcoded for now
-thresh_pred=0.5 # the threshold of predicted probability for qualified somatic insertion (0.0-1.0) (0, 0.5)
-thresh_polya=0.7 # the threshold of "A" or "T" percentage of polyA tail (last 11 bps) for qualified somatic insertion (0.7)
-thresh_varitidx=4.0 # the threshold of variant index of target region for qualified somatic insertion (4.0, 5.0)
-thresh_NvsT=0.05 # the threshold of percentage (percentage = the total counts of normal / the total counts of tumor) (0.03, 0.05)
-thresh_promoter=1000 # the region to be considered as promoter from TSS and TES
+thresh_pred=${THRESH_PRED:-0.5} # the threshold of predicted probability for qualified somatic insertion (0.0-1.0) (0, 0.5)
+thresh_polya=${THRESH_POLYA:-0.7} # the threshold of "A" or "T" percentage of polyA tail (last 11 bps) for qualified somatic insertion (0.7)
+thresh_varitidx=${THRESH_VARITIDX:-4.0} # the threshold of variant index of target region for qualified somatic insertion (4.0, 5.0)
+thresh_NvsT=${THRESH_NVST:-0.05} # the threshold of percentage (percentage = the total counts of normal / the total counts of tumor) (0.03, 0.05)
+thresh_promoter=${THRESH_PROMOTER:-1000} # the region to be considered as promoter from TSS and TES
 if_header_list=T
-l1hsprimer_end_noA="AGATATACCTAATGCTAGATGACACGTTAGTGGGTGCAGCGCACCAGCATGGCACATGTATACATATGTAACTAACCTGCACAATGTGCACATGTACCCTAAAACTTAGAGTATAAT"
-l1hsprimer_end_noA_rc="ATTATACTCTAAGTTTTAGGGTACATGTGCACATTGTGCAGGTTAGTTACATATGTATACATGTGCCATGCTGGTGCGCTGCACCCACTAACGTGTCATCTAGCATTAGGTATATCT"
+l1hsprimer_end_noA=${L1HSPRIMER_END_NOA:-AGATATACCTAATGCTAGATGACACGTTAGTGGGTGCAGCGCACCAGCATGGCACATGTATACATATGTAACTAACCTGCACAATGTGCACATGTACCCTAAAACTTAGAGTATAAT}
+l1hsprimer_end_noA_rc=${L1HSPRIMER_END_NOA_RC:-ATTATACTCTAAGTTTTAGGGTACATGTGCACATTGTGCAGGTTAGTTACATATGTATACATGTGCCATGCTGGTGCGCTGCACCCACTAACGTGTCATCTAGCATTAGGTATATCT}
 l1hsprimer="a(5904)"
 
 # input parameters
@@ -40,7 +39,7 @@ echo "control-file="$control_file
 
 ########## first-step: annotate each insertion with euL1db annotation files #############
 # P6_IdentificationOfExistingMobileDNASite.java
-bed1flk=100 # number of flanking base pairs on each side for overlapping regions
+bed1flk=${BED1FLK:-100} # number of flanking base pairs on each side for overlapping regions
 bed1chr=4 # column number of chormosome (starting from 0) on first bed file
 bed1s=5 # column number of target start position (starting from 0) on first bed file
 bed1e=6 # column number of target end position (starting from 0) on first bed file
@@ -58,7 +57,7 @@ feature_mrip=${repred_file}.${outnamekey1}
 java $JFLAGS -classpath ${tipseqjar} org/nyumc/TIPseqHunter_20150727/P6_IdentificationOfExistingMobileDNASite ${repred_path} ${eumrippath} ${feature_mrip} ${eumrip} ${bed1flk} ${bed1chr} ${bed1s} ${bed1e} ${bed2chr} ${bed2s} ${bed2e} ${bed2add1} ${bed2add2} ${bed2add3} ${outnamekey2} ${ifheader}
 
 ########## second-step: compare each insertion with control sites #############
-bed1flk=50
+bed1flk=${BED1FLK_CONTROL:-50}
 bed1chr=4
 bed1s=5
 bed1e=6
