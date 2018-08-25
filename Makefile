@@ -42,28 +42,16 @@ build-nc: ## Build the image without caching
 
 .PHONY: pull
 
-pull: pull-version pull-latest ## Pull the VERSION and latest tagged images from the dockerhub registry
-
-.PHONY: pull-latest
-
-pull-latest: ## Pull the latest tagged image from dockerhub registry
+pull: ## Pull the latest tagged image from the dockerhub registry
 	$(info Pull latest tagged $(APP_NAME) image from $(DOCKERHUB_REPO))
 	docker pull $(DOCKERHUB_REPO):latest && docker tag $(DOCKERHUB_REPO):latest $(APP_NAME):latest
 
-.PHONY: pull-version
-
-pull-version: ## Pull the VERSION tagged image from dockerhub registry
-	$(info Pull version=$(VERSION) tagged $(APP_NAME) from $(DOCKERHUB_REPO))
-	docker pull $(DOCKERHUB_REPO):$(VERSION) && docker tag $(DOCKERHUB_REPO):$(VERSION) $(APP_NAME):$(VERSION)
-
 .PHONY: remove
 
-remove: ## Remove the image
+remove: ## Remove the lattest tagged image
 	$(info Remove $(APP_NAME) image)
 	docker rmi $(APP_NAME):latest 2> /dev/null
-	docker rmi $(APP_NAME):$(VERSION) 2> /dev/null
 	docker rmi $(DOCKERHUB_REPO):latest 2> /dev/null
-	docker rmi $(DOCKERHUB_REPO):$(VERSION) 2> /dev/null
 
 # Run the container
 .PHONY: run
