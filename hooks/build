@@ -1,0 +1,3 @@
+#!/bin/bash
+echo "==> Building $IMAGE_NAME with tarball from URL=$TARBALL_URL"
+docker build --build-arg tarball_url=$TARBALL_URL -t $IMAGE_NAME .
