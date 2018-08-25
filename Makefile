@@ -60,8 +60,10 @@ pull-version: ## Pull the VERSION tagged image from dockerhub registry
 
 remove: ## Remove the image
 	$(info Remove $(APP_NAME) image)
-	docker rmi $(APP_NAME) 2> /dev/null
-	docker rmi $(DOCKERHUB_REPO) 2> /dev/null
+	docker rmi $(APP_NAME):latest 2> /dev/null
+	docker rmi $(APP_NAME):$(VERSION) 2> /dev/null
+	docker rmi $(DOCKERHUB_REPO):latest 2> /dev/null
+	docker rmi $(DOCKERHUB_REPO):$(VERSION) 2> /dev/null
 
 # Run the container
 .PHONY: run
