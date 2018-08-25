@@ -7,7 +7,7 @@ VERSION := 1.0
 # Deploy variables
 APP_NAME := tipseqhunter
 CONTAINER_NAME := $(APP_NAME)
-TIPSEQ_HUNTER_DATA := tipseq_hunter_data.tar.gz
+TIPSEQ_HUNTER_DATA := https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz
 
 # Import config
 # You can change the default config with `make CONFIG="config_special.env"`
