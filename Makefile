@@ -7,7 +7,7 @@ VERSION := 1.0
 # Deploy variables
 APP_NAME := tipseqhunter
 CONTAINER_NAME := $(APP_NAME)
-TIPSEQ_HUNTER_DATA := https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz
+TARBALL_URL := https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz
 
 # Import config
 # You can change the default config with `make CONFIG="config_special.env"`
@@ -31,13 +31,13 @@ help: ## This help
 
 build: ## Build the image
 	$(info Build $(APP_NAME) image)
-	docker build --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
+	docker build --build-arg tarball_url=$(TARBALL_URL) -t $(APP_NAME) .
 
 .PHONY: build-nc
 
 build-nc: ## Build the image without caching
 	$(info Build $(APP_NAME) image no caching)
-	docker build --no-cache --build-arg tipseq_hunter_data=$(TIPSEQ_HUNTER_DATA) -t $(APP_NAME) .
+	docker build --no-cache --build-arg tarball_url=$(TARBALL_URL) -t $(APP_NAME) .
 
 .PHONY: remove
 
