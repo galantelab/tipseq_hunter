@@ -7,6 +7,7 @@ VERSION := 1.0
 # Deploy variables
 APP_NAME := tipseqhunter
 CONTAINER_NAME := $(APP_NAME)
+DOCKERHUB_REPO := thiagomiller/tipseqhunter
 TARBALL_URL := https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz
 
 # Import config
@@ -39,11 +40,28 @@ build-nc: ## Build the image without caching
 	$(info Build $(APP_NAME) image no caching)
 	docker build --no-cache --build-arg tarball_url=$(TARBALL_URL) -t $(APP_NAME) .
 
+.PHONY: pull
+
+pull: pull-version pull-latest ## Pull the VERSION and latest tagged images from the dockerhub registry
+
+.PHONY: pull-latest
+
+pull-latest: ## Pull the latest tagged image from dockerhub registry
+	$(info Pull latest tagged $(APP_NAME) image from $(DOCKERHUB_REPO))
+	docker pull $(DOCKERHUB_REPO):latest && docker tag $(DOCKERHUB_REPO):latest $(APP_NAME):latest
+
+.PHONY: pull-version
+
+pull-version: ## Pull the VERSION tagged image from dockerhub registry
+	$(info Pull version=$(VERSION) tagged $(APP_NAME) from $(DOCKERHUB_REPO))
+	docker pull $(DOCKERHUB_REPO):$(VERSION) && docker tag $(DOCKERHUB_REPO):$(VERSION) $(APP_NAME):$(VERSION)
+
 .PHONY: remove
 
 remove: ## Remove the image
 	$(info Remove $(APP_NAME) image)
-	docker rmi $(APP_NAME)
+	docker rmi $(APP_NAME) 2> /dev/null
+	docker rmi $(DOCKERHUB_REPO) 2> /dev/null
 
 # Run the container
 .PHONY: run
@@ -114,11 +132,11 @@ $(MODEL_FILES):
 
 .PHONY: up
 
-up: build run ## Build and run TIPseqHunter pipeline completely
-
-.PHONY: check-env
+up: pull run ## Pull and run TIPseqHunter pipeline completely
 
 # Check if INPUT_DIR/OUTPUT_DIR `args` are defined
+.PHONY: check-env
+
 check-env:
 ifndef INPUT_DIR
 	$(error 'INPUT_DIR' is not defined)
