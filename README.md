@@ -23,13 +23,13 @@ Clone this repository:
 
 `$ git clone https://github.com/galantelab/tipseq_hunter.git`
 
-> TIPseqHunter needs biological annotation files that end up to occupy a few gigabytes. In order to handle these files, we created a gzipped tarball which is currently hosted in AWS. So, to successfully build the image, it is necessary to pass the variable `tarball_url`, which may point to the tarball URL, to the **docker build** command.
+> TIPseqHunter needs biological annotation files that occupy a few gigabytes. In order to deal with these files, we created a gzipped tarball which is currently hosted in AWS. So, to successfully build the docker image, it is required to define the variable `tarball_url`, which may point to the tarball URL, to the **docker build** command.
 
 Inside the tipseq_hunter folder, build the image:
 
 `$ docker build --build-arg tarball_url=https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz -t tipseqhunter .`
 
-Or better, use the [`Makefile`](https://github.com/galantelab/tipseq_hunter/blob/master/Makefile) inside tipseq_hunter folder:
+Another and better option is using the [`Makefile`](https://github.com/galantelab/tipseq_hunter/blob/master/Makefile) inside tipseq_hunter folder:
 
 `$ make build`
 
@@ -39,7 +39,7 @@ Pull **tipseqhunter** image from [dockerhub](https://hub.docker.com) registry:
 
 `$ docker pull thiagomiller/tipseqhunter`
 
-Or with the Makefile:
+Or using Makefile:
 
 `$ make pull`
 
@@ -47,7 +47,7 @@ Or with the Makefile:
 
 ### Usage
 
-Once installed the docker image, the user can utilize the [`Makefile`](https://github.com/galantelab/tipseq_hunter/blob/master/Makefile), in order to automate the process of creating the container and running the pipeline, as well as utilize the ordinary **docker run** command.
+Once installed the docker image, the user may apply the [`Makefile`](https://github.com/galantelab/tipseq_hunter/blob/master/Makefile), in order to automate the process of creating the container and running the pipeline, as well as using the ordinary **docker run** command.
 
 #### Examples with docker run
 
@@ -66,7 +66,7 @@ $ docker run \
 
 That command sets the user UID:GID, mounts the *input/ouput* directories, sets the current working directory as the *output* folder and, finally, runs **TIPseqHunterPipelinejar.sh** script. In the end, the container is automatically removed.
 
-The **TIPseqHunterPipelinejar/TIPseqHunterPipelineJarSomatic** runs based in some cutoffs. There is a default value to each one, but you can change it through environment variables. The best way to do it is passing a configuration file to the **docker run** command. You can find an example in [`config.env`](https://github.com/galantelab/tipseq_hunter/blob/master/config.env) file, which is already set to the default values. To use it with **docker run**:
+The **TIPseqHunterPipelinejar/TIPseqHunterPipelineJarSomatic** runs based on some cutoffs. There is a default value to each one, but you might change it through environment variables. The best way to do it is by a configuration file to the **docker run** command. You can find an example in [`config.env`](https://github.com/galantelab/tipseq_hunter/blob/master/config.env) file, which is already set to the default values. To use it with **docker run**:
 
 ```
 $ docker run \
