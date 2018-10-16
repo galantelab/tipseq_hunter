@@ -5,7 +5,7 @@
 
 ### Motivation
 
-[`TIPseqHunterPipelinejar.sh`](https://github.com/galantelab/tipseq_hunter/blob/master/bin/TIPseqHunterPipelineJar.sh) and [`TipseqHunterPipelineJarSomatic.sh`](https://github.com/galantelab/tipseq_hunter/blob/master/bin/TIPseqHunterPipelineJarSomatic.sh) need some java libraries as well as biological annotations and genome indexes. Therefore, manipulating all these dependencies ends up being troublesome. For that reason, [`docker`](https://www.docker.com/) is a good approach to overcome this kind of problem, because it has the ability to encapsulate the whole environment needed by the application, so that it can run in different machines. As result, the pipeline becomes more reliable and reproducible.
+Here we present the [`docker`](https://www.docker.com/) version of TIPseqHunter pipeline. This approach has the ability to encapsulate all java dependencies, read aligners, genome indexes and biological annotation files needed by both steps of the pipeline: [`TIPseqHunterPipelinejar.sh`](https://github.com/galantelab/tipseq_hunter/blob/master/bin/TIPseqHunterPipelineJar.sh) and [`TipseqHunterPipelineJarSomatic.sh`], once manipulating all these dependencies ends up being a little tricky depending on user expertise. 
 
 ### Prerequisities
 
