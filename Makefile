@@ -7,7 +7,7 @@ VERSION := 1.0
 # Deploy variables
 APP_NAME := tipseqhunter
 CONTAINER_NAME := $(APP_NAME)
-DOCKERHUB_REPO := thiagomiller/tipseqhunter
+DOCKERHUB_REPO := galantelab/tipseqhunter
 TARBALL_URL := https://bioinfohsl-webusers.s3.amazonaws.com/tmiller/tipseq_hunter_data.tar.gz
 
 # Import config

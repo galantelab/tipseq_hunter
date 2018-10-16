@@ -37,7 +37,7 @@ Another and better option is using the [`Makefile`](https://github.com/galantela
 
 Pull **tipseqhunter** image from [dockerhub](https://hub.docker.com) registry:
 
-`$ docker pull thiagomiller/tipseqhunter`
+`$ docker pull galantelab/tipseqhunter`
 
 Or using Makefile:
 
